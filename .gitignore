@@ -1,0 +1,13 @@
+# Runtime status and logs
+data/*.json
+data/*.jsonl
+data/*.log
+
+# Local editor metadata
+.idea/
+.vscode/
+
+# OS files
+Thumbs.db
+Desktop.ini
+
