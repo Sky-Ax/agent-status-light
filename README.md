@@ -153,6 +153,14 @@ The launcher checks the Codex hook setup first. If the hook is missing or incomp
 
 In the launcher, use the arrow keys to choose, Space or Enter to confirm, and Esc to cancel.
 
+Flash the ESP32-C3 firmware:
+
+```powershell
+.\hardware\arduino\flash-firmware.cmd
+```
+
+The firmware flasher prepares Arduino CLI locally under `tools/`, installs the ESP32 board package and pinned `FastLED@3.9.4`, lists firmware sketches from `hardware\arduino\SerialStatusLight`, asks for the ESP32 serial port, then compiles and uploads the selected firmware. If automatic download fails, it prints manual Arduino CLI or ESP32 board package instructions.
+
 Uninstall hooks only:
 
 ```powershell
@@ -207,6 +215,13 @@ bridge/
   main_test.go         Go tests
 data/
   .gitkeep             Runtime data directory placeholder
+hardware/
+  arduino/
+    flash-firmware.cmd   Double-click ESP32-C3 firmware flasher
+    flash-firmware.ps1   Firmware flasher implementation
+    SerialStatusLight/
+      SerialStatusLight.ino ESP32-C3 + WS2812B serial status firmware
+      RainbowLight.ino      Standalone rainbow light demo firmware
 test/
   install.test.ps1
   launcher.test.ps1

@@ -12,6 +12,8 @@ import (
 	"go.bug.st/serial"
 )
 
+const serialWriteReleaseWait = 5 * time.Second
+
 func runBridge(args []string) error {
 	cfg, err := parseBridgeFlags(args)
 	if err != nil {
@@ -296,7 +298,13 @@ func writeWithTimeout(port serial.Port, data []byte, timeout time.Duration) erro
 	case err := <-done:
 		return err
 	case <-time.After(timeout):
+		_ = port.ResetOutputBuffer()
 		_ = port.Close()
+		select {
+		case <-done:
+		case <-time.After(serialWriteReleaseWait):
+			return fmt.Errorf("serial write timed out after %s; previous write is still releasing after %s", timeout, serialWriteReleaseWait)
+		}
 		return fmt.Errorf("serial write timed out after %s", timeout)
 	}
 }

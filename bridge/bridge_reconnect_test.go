@@ -77,6 +77,27 @@ func TestSendStateWithRecoveryReturnsActionableReconnectFailure(t *testing.T) {
 	}
 }
 
+func TestWriteWithTimeoutPurgesAndClosesPortBeforeReturning(t *testing.T) {
+	port := newBlockingSerialPort()
+
+	err := writeWithTimeout(port, []byte("working\n"), 10*time.Millisecond)
+	if err == nil {
+		t.Fatal("writeWithTimeout returned nil, want timeout error")
+	}
+	if !strings.Contains(err.Error(), "serial write timed out") {
+		t.Fatalf("error = %q, want serial write timeout", err)
+	}
+	if !port.resetOutputCalled {
+		t.Fatal("ResetOutputBuffer should be called to abort a pending serial write")
+	}
+	if !port.closed {
+		t.Fatal("Close should be called after aborting a timed-out serial write")
+	}
+	if !port.writeReleased {
+		t.Fatal("writeWithTimeout should wait briefly for the pending Write to release")
+	}
+}
+
 type scriptedSerialPort struct {
 	writeErrs []error
 	writes    [][]byte
@@ -119,3 +140,53 @@ func (p *scriptedSerialPort) Close() error {
 }
 
 func (p *scriptedSerialPort) Break(duration time.Duration) error { return nil }
+
+type blockingSerialPort struct {
+	release           chan struct{}
+	resetOutputCalled bool
+	closed            bool
+	writeReleased     bool
+}
+
+func newBlockingSerialPort() *blockingSerialPort {
+	return &blockingSerialPort{release: make(chan struct{})}
+}
+
+func (p *blockingSerialPort) SetMode(mode *serial.Mode) error { return nil }
+
+func (p *blockingSerialPort) Read(data []byte) (int, error) { return 0, errors.New("not implemented") }
+
+func (p *blockingSerialPort) Write(data []byte) (int, error) {
+	<-p.release
+	p.writeReleased = true
+	return 0, errors.New("write aborted")
+}
+
+func (p *blockingSerialPort) Drain() error { return nil }
+
+func (p *blockingSerialPort) ResetInputBuffer() error { return nil }
+
+func (p *blockingSerialPort) ResetOutputBuffer() error {
+	p.resetOutputCalled = true
+	return nil
+}
+
+func (p *blockingSerialPort) SetDTR(dtr bool) error { return nil }
+
+func (p *blockingSerialPort) SetRTS(rts bool) error { return nil }
+
+func (p *blockingSerialPort) GetModemStatusBits() (*serial.ModemStatusBits, error) {
+	return &serial.ModemStatusBits{}, nil
+}
+
+func (p *blockingSerialPort) SetReadTimeout(timeout time.Duration) error { return nil }
+
+func (p *blockingSerialPort) Close() error {
+	if !p.closed {
+		p.closed = true
+		close(p.release)
+	}
+	return nil
+}
+
+func (p *blockingSerialPort) Break(duration time.Duration) error { return nil }
