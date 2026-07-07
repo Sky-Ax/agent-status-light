@@ -8,9 +8,14 @@ Agent Hook Light turns AI agent hook events into visible desk status colors. Cod
 
 ## Demo
 
-[Watch the demo video](https://github.com/Sky-Ax/agent-hook-light/releases/download/v0.1.0/demo.mp4)
-
-<video src="https://github.com/Sky-Ax/agent-hook-light/releases/download/v0.1.0/demo.mp4" controls muted width="720"></video>
+<table>
+  <tr>
+    <td>
+      <video src="https://github.com/Sky-Ax/agent-hook-light/releases/download/v0.1.0/demo.mp4" controls="controls" muted="muted" width="720" style="max-width:100%; min-height:360px">
+      </video>
+    </td>
+  </tr>
+</table>
 
 ## Quick Start
 
@@ -59,7 +64,7 @@ Keep this window running while using Codex. The light follows agent status chang
 | `idle` | Green / gray | No active task |
 | `thinking` | Blue | Agent is reasoning |
 | `working` | Yellow / orange | Agent is running tools |
-| `waiting` | Purple | Waiting for user input or permission |
+| `waiting` | Amber | Waiting for user input or permission |
 | `success` | Green | Task completed |
 | `error` | Red | Error or attention required |
 | `unknown` | Blue / gray | Unsupported or unclear state |
